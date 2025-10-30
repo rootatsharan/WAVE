@@ -7,7 +7,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 VENV_DIR="$PROJECT_ROOT/venv"
 PYTHON_CMD="${PYTHON_CMD:-python3}"
-PKGS=(tld fuzzywuzzy requests argparse  re)
+PKGS=(tld fuzzywuzzy requests argparse  )
 
 echo "Setting up venv and required modules at: $VENV_DIR"
 
