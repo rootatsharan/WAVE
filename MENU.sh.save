@@ -1,0 +1,454 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# main_menu.sh
+# Place this file in your project root (e.g. ~/WAVE) and run it from there.
+
+PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SETUP_SCRIPT="$PROJECT_ROOT/setup_modules.sh"
+VENV_PY="$PROJECT_ROOT/venv/bin/python"
+XSS_SCRIPT="$PROJECT_ROOT/XSS/xss1.py"
+
+# If venv doesn't exist, run setup automatically (non-interactive)
+if [[ ! -x "$VENV_PY" ]]; then
+    echo "Venv python not found. Running setup to create venv and install modules..."
+    bash "$SETUP_SCRIPT"
+fi
+
+# verify XSS script exists
+if [[ ! -f "$XSS_SCRIPT" ]]; then
+    echo "Error: XSS script not found at: $XSS_SCRIPT" >&2
+    echo "Please ensure XSS/xss1.py exists."
+    exit 1
+fi
+
+# optional: install basic UI tools (figlet, cowsay, lolcat) if missing
+ensure_pkg() {
+  if ! command -v "$1" &> /dev/null; then
+    echo "Installing $1..."
+    sudo apt-get update -y
+    sudo apt-get install -y "$1"
+  fi
+}
+# (commented out to avoid sudo automatically; uncomment if you want auto install)
+# ensure_pkg figlet
+# ensure_pkg cowsay
+# ensure_pkg lolcat
+
+# UI header (keep it minimal if those tools aren't installed)
+if command -v figlet &> /dev/null && command -v lolcat &> /dev/null; then
+  center() {
+      local termwidth
+      termwidth=$(tput cols)
+      while IFS= read -r line; do
+          local padding=$(( (termwidth - ${#line}) / 2 ))
+          printf "%*s%s\n" "$padding" "" "$line"
+      done
+  }
+  figlet -f big "W A V E" | center | lolcat -a --speed=100
+  echo "WEB AUTOMATION vulnerability EXPLORER" | center
+fi
+cowsay -f fox "THIS TOOL IS MADE NY SHARAN KUMAR VR(VITIAN).....WELCOME"
+echo ""
+echo ""
+echo "GITHUB:https://github.com/rootatsharan/WAVE"
+echo "LINKEDIN:www.linkedin.com/in/sharan-kumar-vr-4a287a376"
+echo ""
+
+# Define colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+NC='\033[0m' # No Color
+
+main_options=(
+    "1.  CROSS-SITE SCRIPTING (XSS)"
+    "2.  SQL INJECTION TESTING (SQLi)"
+    "3.  NO SQL INJECTION TESTING"
+    "4.  COMMAND INJECTION"
+    "5.  BROKEN ACCESS CONTROL"
+    "6.  SERVER-SIDE REQUEST FORGERY (SSRF)"
+    "7.  SECURITY MISCONFIGURATION (PORT, VULN SCANNING)"
+    "8.  SUBDOMAINS / API FINDER"
+    "9.  INFORMATION GATHERING / POWERFUL DNS"
+    "10. README-MANUAL/GUIDE"
+    "11. SAVED REPORTS"
+    "12. CREDITS"
+    "13. EXIT"
+)
+
+show_main_menu() {
+    echo -e "${GREEN}Select an option:${NC}"
+    for opt in "${main_options[@]}"; do
+        echo -e "${YELLOW}${opt}${NC}"
+    done
+    echo -ne "${GREEN}Enter number (1-13): ${NC}"
+    read -r main_choice
+}
+
+# --- XSS runner helper (uses venv python explicitly) ---
+run_xss() {
+    # ensure venv python is present
+    if [[ ! -x "$VENV_PY" ]]; then
+        echo -e "${RED}Virtualenv python not found at ${VENV_PY}. Run setup_modules.sh first.${NC}"
+        return 1
+    fi
+
+    # show --help first using venv python
+    echo -e "${GREEN}Showing help for XSS script (${VENV_PY} ${XSS_SCRIPT} --help):${NC}"
+    echo "----------------------------------------"
+    "$VENV_PY" "$XSS_SCRIPT" --help || {
+        echo -e "${YELLOW}Warning: script returned non-zero exit when running --help (it may still work).${NC}"
+    }
+    echo "----------------------------------------"
+
+    # prompt for URL
+    echo -ne "${GREEN}Enter target URL (or type 'back' to return): ${NC}"
+    read -r target_url
+    if [[ "$target_url" =~ ^[Bb][Aa][Cc][K]$ ]]; then
+        echo -e "${YELLOW}Returning to main menu...${NC}"
+        return 0
+    fi
+
+    # basic URL validation
+    if ! [[ "$target_url" =~ ^https?:// ]]; then
+        echo -e "${YELLOW}URL doesn't start with http:// or https:// — I'll prepend http:// for you.${NC}"
+        target_url="http://${target_url}"
+    fi
+
+    echo -e "${GREEN}Running XSS scan on: ${target_url}${NC}"
+    "$VENV_PY" "$XSS_SCRIPT" --url "$target_url"
+    local rc=$?
+    if [[ $rc -ne 0 ]]; then
+        echo -e "${RED}XSS script exited with status ${rc}.${NC}"
+    else
+        echo -e "${GREEN}XSS scan completed.${NC}"
+    fi
+    return $rc
+}
+# --- Command Injection runner helper (uses venv python explicitly) ---
+# --- Command Injection runner helper (uses venv python explicitly) ---
+run_command_injection() {
+    local CI_SCRIPT="$PROJECT_ROOT/CommandInjection/WAVE-CI.py"
+    
+    # ensure WAVE-CI script exists
+    if [[ ! -f "$CI_SCRIPT" ]]; then
+        echo -e "${RED}Error: WAVE-CI script not found at: $CI_SCRIPT${NC}"
+        echo "Please ensure CommandInjection/WAVE-CI.py exists."
+        return 1
+    fi
+
+    # ensure venv python is present
+    if [[ ! -x "$VENV_PY" ]]; then
+        echo -e "${RED}Virtualenv python not found at ${VENV_PY}. Run setup_modules.sh first.${NC}"
+        return 1
+    fi
+
+    # show --help first using venv python
+    echo -e "${GREEN}Showing help for WAVE-CI (Command Injection):${NC}"
+    echo "----------------------------------------"
+    "$VENV_PY" "$CI_SCRIPT" --help || {
+        echo -e "${YELLOW}Warning: script returned non-zero exit when running --help (it may still work).${NC}"
+    }
+    echo "----------------------------------------"
+
+    # prompt for URL
+    echo -ne "${GREEN}Enter target URL (or type 'back' to return): ${NC}"
+    read -r target_url
+    if [[ "$target_url" =~ ^[Bb][Aa][Cc][Kk]$ ]]; then
+        echo -e "${YELLOW}Returning to main menu...${NC}"
+        return 0
+    fi
+
+    # basic URL validation
+    if ! [[ "$target_url" =~ ^https?:// ]]; then
+        echo -e "${YELLOW}URL doesn't start with http:// or https:// — prepending http://${NC}"
+        target_url="http://${target_url}"
+    fi
+
+    # Ask for POST data (optional)
+    echo -ne "${GREEN}Enter POST data (e.g., 'storeId=1&productId=1') or press Enter to skip: ${NC}"
+    read -r post_data
+
+    # Ask for parameter to test (optional)
+    echo -ne "${GREEN}Enter parameter to test (e.g., 'storeId') or press Enter to auto-detect: ${NC}"
+    read -r test_param
+
+    # Ask for cookie (optional)
+    echo -ne "${GREEN}Enter cookie (e.g., 'session=xyz') or press Enter to skip: ${NC}"
+    read -r cookie_data
+
+    # Ask for OS command (optional, default whoami)
+    echo -ne "${GREEN}Enter OS command to execute [default: whoami]: ${NC}"
+    read -r os_command
+    os_command="${os_command:-whoami}"
+
+    # Build command array
+    local cmd=("$VENV_PY" "$CI_SCRIPT" "--url" "$target_url" "--os-cmd" "$os_command")
+    
+    if [[ -n "$post_data" ]]; then
+        cmd+=("--data" "$post_data")
+    fi
+    
+    if [[ -n "$test_param" ]]; then
+        cmd+=("-p" "$test_param")
+    fi
+    
+    if [[ -n "$cookie_data" ]]; then
+        cmd+=("--cookie" "$cookie_data")
+    fi
+
+    echo -e "${GREEN}Running WAVE-CI Command Injection test on: ${target_url}${NC}"
+    "${cmd[@]}"
+    
+    local rc=$?
+    if [[ $rc -ne 0 ]]; then
+        echo -e "${RED}WAVE-CI script exited with status ${rc}.${NC}"
+    else
+        echo -e "${GREEN}WAVE-CI scan completed.${NC}"
+    fi
+    return $rc
+}
+# --- Broken Access Control runner helper ---
+run_broken_access_control() {
+    local BAC_SCRIPT="$PROJECT_ROOT/BrokenAccessControl/WAVE-BAC.py"
+    
+    if [[ ! -f "$BAC_SCRIPT" ]]; then
+        echo -e "${RED}Error: WAVE-BAC script not found at: $BAC_SCRIPT${NC}"
+        echo "Please ensure BrokenAccessControl/WAVE-BAC.py exists."
+        return 1
+    fi
+
+    if [[ ! -x "$VENV_PY" ]]; then
+        echo -e "${RED}Virtualenv python not found at ${VENV_PY}. Run setup_modules.sh first.${NC}"
+        return 1
+    fi
+
+    echo -e "${GREEN}Showing help for WAVE-BAC (Broken Access Control):${NC}"
+    echo "----------------------------------------"
+    "$VENV_PY" "$BAC_SCRIPT" --help
+    echo "----------------------------------------"
+
+    # Prompt for URL
+    echo -ne "${GREEN}Enter target URL (or 'back' to return): ${NC}"
+    read -r target_url
+    if [[ "$target_url" =~ ^[Bb][Aa][Cc][Kk]$ ]]; then
+        echo -e "${YELLOW}Returning to main menu...${NC}"
+        return 0
+    fi
+
+    if ! [[ "$target_url" =~ ^https?:// ]]; then
+        echo -e "${YELLOW}URL doesn't start with http:// or https:// — prepending http://${NC}"
+        target_url="http://${target_url}"
+    fi
+
+    # Ask for test type
+    echo -e "${GREEN}Select test type:${NC}"
+    echo "  1) IDOR (Insecure Direct Object Reference)"
+    echo "  2) Path Traversal"
+    echo "  3) Forced Browsing"
+    echo "  4) Privilege Escalation"
+    echo -ne "${GREEN}Enter choice (1-4): ${NC}"
+    read -r test_choice
+
+    local test_type=""
+    case "$test_choice" in
+        1) test_type="idor" ;;
+        2) test_type="path-traversal" ;;
+        3) test_type="forced-browsing" ;;
+        4) test_type="privilege-escalation" ;;
+        *) echo -e "${RED}Invalid choice${NC}"; return 1 ;;
+    esac
+
+    local cmd=("$VENV_PY" "$BAC_SCRIPT" "--url" "$target_url" "--test" "$test_type")
+
+    # Type-specific prompts
+    if [[ "$test_type" == "idor" ]]; then
+        echo -ne "${GREEN}Enter parameter name (e.g., 'id'): ${NC}"
+        read -r param_name
+        echo -ne "${GREEN}Enter test values (comma-separated, e.g., '1,2,3,100,999'): ${NC}"
+        read -r test_values
+        cmd+=("--param" "$param_name" "--values" "$test_values")
+    elif [[ "$test_type" == "path-traversal" ]]; then
+        echo -ne "${GREEN}Enter parameter name (e.g., 'file' or 'name'): ${NC}"
+        read -r param_name
+        cmd+=("--param" "$param_name")
+    elif [[ "$test_type" == "forced-browsing" || "$test_type" == "privilege-escalation" ]]; then
+        echo -ne "${GREEN}Enter endpoints (comma-separated, or press Enter for defaults): ${NC}"
+        read -r endpoints
+        if [[ -n "$endpoints" ]]; then
+            cmd+=("--endpoints" "$endpoints")
+        fi
+    fi
+
+    # Ask for cookie
+    echo -ne "${GREEN}Enter cookie (e.g., 'session=xyz') or press Enter to skip: ${NC}"
+    read -r cookie_data
+    if [[ -n "$cookie_data" ]]; then
+        cmd+=("--cookie" "$cookie_data")
+    fi
+
+    echo -e "${GREEN}Running WAVE-BAC test...${NC}"
+    "${cmd[@]}"
+    
+    local rc=$?
+    if [[ $rc -ne 0 ]]; then
+        echo -e "${RED}WAVE-BAC test exited with status ${rc}.${NC}"
+    else
+        echo -e "${GREEN}WAVE-BAC test completed.${NC}"
+    fi
+    return $rc
+}
+
+run_subdomain_api_finder() {
+    local SF_SCRIPT="$PROJECT_ROOT/SubdomainFinder/WAVE-SF.py"
+
+    if [[ ! -f "$SF_SCRIPT" ]]; then
+        echo -e "${RED}Error: WAVE-SF script not found at: $SF_SCRIPT${NC}"
+        echo "Please ensure SubdomainFinder/WAVE-SF.py exists."
+        return 1
+    fi
+
+    if [[ ! -x "$VENV_PY" ]]; then
+        echo -e "${RED}Virtualenv python not found at ${VENV_PY}. Run setup_modules.sh first.${NC}"
+        return 1
+    fi
+
+    echo -e "${GREEN}Showing help for WAVE-SF (Subdomain/API Finder):${NC}"
+    echo "----------------------------------------"
+    "$VENV_PY" "$SF_SCRIPT" --help
+    echo "----------------------------------------"
+
+    # Prompt for domain
+    echo -ne "${GREEN}Enter target domain (e.g., example.com): ${NC}"
+    read -r target_domain
+
+    echo -e "${GREEN}What would you like to run?${NC}"
+    echo "  1) Subdomain scan"
+    echo "  2) API endpoint scan"
+    echo -ne "${GREEN}Enter choice (1/2): ${NC}"
+    read -r sf_choice
+
+    local cmd=("$VENV_PY" "$SF_SCRIPT" "--domain" "$target_domain")
+    if [[ "$sf_choice" == "1" ]]; then
+        cmd+=("--subdomains")
+        echo -ne "${GREEN}Enter path to subdomain wordlist (subs.txt): ${NC}"
+        read -r sub_wordlist
+        cmd+=("--wordlist" "$sub_wordlist")
+    elif [[ "$sf_choice" == "2" ]]; then
+        cmd+=("--apis")
+        echo -ne "${GREEN}Enter path to endpoints file (apis.txt): ${NC}"
+        read -r api_endpoints
+        cmd+=("--endpoints" "$api_endpoints")
+    else
+        echo -e "${RED}Invalid scan choice${NC}"
+        return 1
+    fi
+
+    echo -e "${GREEN}Running WAVE-SF scan...${NC}"
+    "${cmd[@]}"
+    local rc=$?
+    if [[ $rc -ne 0 ]]; then
+        echo -e "${RED}WAVE-SF scan exited with status ${rc}.${NC}"
+    else
+        echo -e "${GREEN}WAVE-SF scan completed.${NC}"
+    fi
+    return $rc
+}
+
+handle_main_choice() {
+    case "$main_choice" in
+        1)
+            while true; do
+                run_xss
+                echo ""
+                echo -ne "${GREEN}Run another XSS test? [y/N]: ${NC}"
+                read -r ans
+                case "$ans" in
+                    [Yy]* ) continue ;;
+                    * ) break ;;
+                esac
+            done
+            ;;
+        2)
+            echo -e "${GREEN}SQL INJECTION TESTING selected.${NC}"
+            ;;
+        3)
+            echo -e "${GREEN}NO SQL INJECTION TESTING selected.${NC}"
+            ;;
+       4)
+           while true; do
+           run_command_injection
+           echo ""
+           echo -ne "${GREEN}Run another Command Injection test? [y/N]: ${NC}"
+           read -r ans
+           case "$ans" in
+            [Yy]* ) continue ;;
+            * ) break ;;
+             esac
+          done
+         ;;
+
+         5)
+              while true; do
+                run_broken_access_control
+                echo ""
+                echo -ne "${GREEN}Run another Broken Access Control test? [y/N]: ${NC}"
+                read -r ans
+                case "$ans" in
+                     [Yy]* ) continue ;;
+                      * ) break ;;
+                esac
+            done
+             ;;
+     
+
+ 
+        6)
+            echo -e "${GREEN}SERVER-SIDE REQUEST FORGERY selected.${NC}"
+            ;;
+        7)
+            echo -e "${GREEN}SECURITY MISCONFIGURATION selected.${NC}"
+            ;;
+        8)
+            while true; do
+                run_subdomain_api_finder
+                echo ""
+                echo -ne "${GREEN}Run another Subdomain/API scan? [y/N]: ${NC}"
+                read -r ans
+                case "$ans" in
+                     [Yy]* ) continue ;;
+                     * ) break ;;
+                esac
+             done
+             ;;
+
+        9)
+            echo -e "${GREEN}INFORMATION GATHERING / DNS selected.${NC}"
+            ;;
+        10)
+            echo -e "${GREEN}README-MANUAL/GUIDE.${NC}"
+            ;;
+        11)
+            echo -e "${GREEN}SAVED REPORTS selected.${NC}"
+            ;;
+        12)
+            echo -e "${GREEN}CREDITS selected.${NC}"
+            bash "$PROJECT_ROOT/credits.sh"
+            ;;
+        13)
+            echo -e "${GREEN}Exiting...${NC}"
+            exit 0
+            ;;
+        *)
+            echo -e "${RED}Invalid choice.${NC}"
+            ;;
+    esac
+}
+
+# Main Execution Loop
+while true; do
+    show_main_menu
+    handle_main_choice
+    echo ""
+done

